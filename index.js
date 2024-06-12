@@ -110,7 +110,15 @@ async function run() {
             }
             const result = await usersCollection.updateOne(query, updateDoc, options)
             res.send(result)
-        })
+        });
+
+
+        // Get user by email from database
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email
+            const result = await usersCollection.findOne({ email })
+            res.send(result)
+        });
 
         // Send a ping to confirm a successful connection
         await client.db('admin').command({ ping: 1 })
