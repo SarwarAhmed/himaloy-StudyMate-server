@@ -49,6 +49,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const usersCollection = client.db('studyMate').collection('users')
+        const studySessionsCollection = client.db('studyMate').collection('sessions')
 
         // Connect the client to the server
         app.post('/jwt', async (req, res) => {
@@ -117,6 +118,18 @@ async function run() {
         app.get('/user/:email', async (req, res) => {
             const email = req.params.email
             const result = await usersCollection.findOne({ email })
+            res.send(result)
+        });
+
+        // Get only approved study sessions not more than 6
+        app.get('/approved-sessions', async (req, res) => {
+            const result = await studySessionsCollection.find({ status: 'approved' }).limit(6).toArray()
+            res.send(result)
+        });
+
+        // get all sessions from db
+        app.get('/sessions', async (req, res) => {
+            const result = await studySessionsCollection.find().toArray()
             res.send(result)
         });
 
