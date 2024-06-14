@@ -133,6 +133,13 @@ async function run() {
             res.send(result)
         });
 
+       
+        // get all tutor form db with status approved and role tutor
+        app.get('/tutors', async (req, res) => {
+            const result = await usersCollection.find({ status: 'Verified', role: 'tutor' }).toArray()
+            res.send(result)
+        });
+
         // Send a ping to confirm a successful connection
         await client.db('admin').command({ ping: 1 })
         console.log(
