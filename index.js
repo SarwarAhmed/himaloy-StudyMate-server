@@ -133,7 +133,15 @@ async function run() {
             res.send(result)
         });
 
-       
+
+        // get a singel session by id from db
+        app.get('/session/:id', async (req, res) => {
+            const id = req.params.id
+            const result = await studySessionsCollection.findOne({ _id: new ObjectId(id) })
+            res.send(result)
+        });
+
+
         // get all tutor form db with status approved and role tutor
         app.get('/tutors', async (req, res) => {
             const result = await usersCollection.find({ status: 'Verified', role: 'tutor' }).toArray()
