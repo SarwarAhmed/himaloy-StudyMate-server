@@ -50,6 +50,7 @@ async function run() {
     try {
         const usersCollection = client.db('studyMate').collection('users')
         const studySessionsCollection = client.db('studyMate').collection('sessions')
+        const bookedSessionsCollection = client.db('studyMate').collection('bookedSessions')
 
         // Connect the client to the server
         app.post('/jwt', async (req, res) => {
@@ -138,6 +139,26 @@ async function run() {
         app.get('/session/:id', async (req, res) => {
             const id = req.params.id
             const result = await studySessionsCollection.findOne({ _id: new ObjectId(id) })
+            res.send(result)
+        });
+
+        // book a session
+        // TODO User can book a session only once.
+        app.post('/book-session', async (req, res) => {
+            const { studentEmail, sessionId, tutorEmail, role } = req.body
+
+            if (role === 'admin' || role === 'tutor') {
+                return res.status(401).send({ message: 'Unauthorized access' })
+            }
+
+            const query = { studentEmail, sessionId, tutorEmail }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    timestamp: Date.now(),
+                },
+            }
+            const result = await bookedSessionsCollection.updateOne(query, updateDoc, options)
             res.send(result)
         });
 
