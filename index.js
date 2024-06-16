@@ -22,7 +22,6 @@ app.use(cookieParser())
 // Verify Token Middleware
 const verifyToken = async (req, res, next) => {
     const token = req.cookies?.token
-    console.log(token)
     if (!token) {
         return res.status(401).send({ message: 'unauthorized access' })
     }
@@ -60,9 +59,12 @@ async function run() {
             })
             res
                 .cookie('token', token, {
+                    // httpOnly: true,
+                    // secure: process.env.NODE_ENV === 'production',
+                    // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                    secure: true,
+                    sameSite: 'None',
                 })
                 .send({ success: true })
         })
@@ -81,6 +83,20 @@ async function run() {
                 res.status(500).send(err)
             }
         })
+
+
+        // verify studen middelware
+        const verifyStudent = async (req, res, next) => {
+            const user = req.user
+            const query = { email: user?.email }
+            const result = await usersCollection.findOne(query)
+            // console.log(result?.role);
+
+            if (!result || result?.role !== 'student') {
+                return res.status(401).send({ message: 'Unauthorized access' })
+            }
+            next()
+        }
 
         // save a user data in db
         app.put('/user', async (req, res) => {
@@ -161,6 +177,15 @@ async function run() {
             const result = await bookedSessionsCollection.updateOne(query, updateDoc, options)
             res.send(result)
         });
+
+        // Students can view his/her booked sessions.
+        // get all booked sessions by student email
+        app.get('/booked-sessions/:email', verifyToken, verifyStudent, async (req, res) => {
+            const email = req.params.email
+            const result = await bookedSessionsCollection.find({ studentEmail: email }).toArray()
+            res.send(result)
+        });
+
 
 
         // get all tutor form db with status approved and role tutor
