@@ -50,6 +50,7 @@ async function run() {
         const usersCollection = client.db('studyMate').collection('users')
         const studySessionsCollection = client.db('studyMate').collection('sessions')
         const bookedSessionsCollection = client.db('studyMate').collection('bookedSessions')
+        const reviewsCollection = client.db('studyMate').collection('reviews');
 
         // Connect the client to the server
         app.post('/jwt', async (req, res) => {
@@ -161,13 +162,13 @@ async function run() {
         // book a session
         // TODO User can book a session only once.
         app.post('/book-session', async (req, res) => {
-            const { studentEmail, sessionId, tutorEmail, role } = req.body
+            const { studentEmail, sessionId, tutorEmail, sessionTitle, role } = req.body
 
             if (role === 'admin' || role === 'tutor') {
                 return res.status(401).send({ message: 'Unauthorized access' })
             }
 
-            const query = { studentEmail, sessionId, tutorEmail }
+            const query = { studentEmail, sessionId, tutorEmail, sessionTitle }
             const options = { upsert: true }
             const updateDoc = {
                 $set: {
@@ -175,6 +176,28 @@ async function run() {
                 },
             }
             const result = await bookedSessionsCollection.updateOne(query, updateDoc, options)
+            res.send(result)
+        });
+
+        // view booked session by id
+        app.get('/view-booked-session/:id',  async (req, res) => {
+            const id = req.params.id
+            const result = await studySessionsCollection.findOne({ _id: new ObjectId(id) })
+            console.log(result);
+            res.send(result)
+        })
+
+        // store review in db
+        app.post('/review', async (req, res) => {
+            const review = req.body
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    ...review,
+                    timestamp: Date.now(),
+                },
+            }
+            const result = await reviewsCollection.updateOne(review, updateDoc, options)
             res.send(result)
         });
 
