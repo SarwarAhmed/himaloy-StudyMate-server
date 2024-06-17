@@ -238,6 +238,23 @@ async function run() {
             res.send(result)
         });
 
+        // update a note by user email and note id
+        app.put('/note/:email/:id', async (req, res) => {
+            const email = req.params.email
+            const id = req.params.id
+            const note = req.body
+            const query = { studentEmail: email, _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    ...note,
+                    timestamp: Date.now(),
+                },
+            }
+            const result = await notesCollection.updateOne(query, updateDoc, options)
+            res.send(result)
+        });
+
         // get all tutor form db with status approved and role tutor
         app.get('/tutors', async (req, res) => {
             const result = await usersCollection.find({ status: 'Verified', role: 'tutor' }).toArray()
