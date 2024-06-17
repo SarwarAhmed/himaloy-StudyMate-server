@@ -92,11 +92,10 @@ async function run() {
             const user = req.user
             const query = { email: user?.email }
             const result = await usersCollection.findOne(query)
-            // console.log(result?.role);
 
-            if (!result || result?.role !== 'student') {
+            if (!result || result?.role !== 'student')
                 return res.status(401).send({ message: 'Unauthorized access' })
-            }
+
             next()
         }
 
@@ -210,8 +209,7 @@ async function run() {
             res.send(result)
         });
 
-        // (Create note route) Students can create his/her notes.
-        // This page will have a form with the following fields:
+        // Post a note to the database
         app.post('/create-note', async (req, res) => {
             const note = req.body
             const options = { upsert: true }
@@ -222,6 +220,13 @@ async function run() {
                 },
             }
             const result = await notesCollection.updateOne(note, updateDoc, options)
+            res.send(result)
+        });
+
+        // Get all notes by student email
+        app.get('/notes/:email', async (req, res) => {
+            const email = req.params.email
+            const result = await notesCollection.find({ studentEmail: email }).toArray()
             res.send(result)
         });
 
