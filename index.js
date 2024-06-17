@@ -230,6 +230,14 @@ async function run() {
             res.send(result)
         });
 
+        // get notes by user email and note id
+        app.get('/note/:email/:id', async (req, res) => {
+            const email = req.params.email
+            const id = req.params.id
+            const result = await notesCollection.findOne({ studentEmail: email, _id: new ObjectId(id) })
+            res.send(result)
+        });
+
         // get all tutor form db with status approved and role tutor
         app.get('/tutors', async (req, res) => {
             const result = await usersCollection.find({ status: 'Verified', role: 'tutor' }).toArray()
