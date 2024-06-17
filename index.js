@@ -51,6 +51,7 @@ async function run() {
         const studySessionsCollection = client.db('studyMate').collection('sessions')
         const bookedSessionsCollection = client.db('studyMate').collection('bookedSessions')
         const reviewsCollection = client.db('studyMate').collection('reviews');
+        const notesCollection = client.db('studyMate').collection('notes');
 
         // Connect the client to the server
         app.post('/jwt', async (req, res) => {
@@ -180,7 +181,7 @@ async function run() {
         });
 
         // view booked session by id
-        app.get('/view-booked-session/:id',  async (req, res) => {
+        app.get('/view-booked-session/:id', async (req, res) => {
             const id = req.params.id
             const result = await studySessionsCollection.findOne({ _id: new ObjectId(id) })
             console.log(result);
@@ -209,7 +210,20 @@ async function run() {
             res.send(result)
         });
 
-
+        // (Create note route) Students can create his/her notes.
+        // This page will have a form with the following fields:
+        app.post('/create-note', async (req, res) => {
+            const note = req.body
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    ...note,
+                    timestamp: Date.now(),
+                },
+            }
+            const result = await notesCollection.updateOne(note, updateDoc, options)
+            res.send(result)
+        });
 
         // get all tutor form db with status approved and role tutor
         app.get('/tutors', async (req, res) => {
