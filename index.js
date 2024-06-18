@@ -270,6 +270,30 @@ async function run() {
             res.send(result)
         });
 
+
+        // Create study session Tutor will create a session by user email
+        app.post('/create-session/:email', async (req, res) => {
+            const email = req.params.email
+            const session = req.body
+            const query = { email, role: 'tutor' }
+            const result = await usersCollection.findOne(query)
+            if (!result) {
+                return res.status(401).send({ message: 'Unauthorized access' })
+            }
+
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    ...session,
+                    timestamp: Date.now(),
+                },
+            }
+            const sessionResult = await studySessionsCollection.updateOne(session, updateDoc, options)
+            res.send(sessionResult)
+        });
+
+
+
         // Send a ping to confirm a successful connection
         await client.db('admin').command({ ping: 1 })
         console.log(
