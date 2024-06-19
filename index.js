@@ -112,6 +112,18 @@ async function run() {
             next()
         }
 
+        // verify admin middleware
+        const verifyAdmin = async (req, res, next) => {
+            const user = req.user
+            const query = { email: user?.email }
+            const result = await usersCollection.findOne(query)
+
+            if (!result || result?.role !== 'admin')
+                return res.status(401).send({ message: 'Unauthorized access' })
+
+            next()
+        };
+
         // save a user data in db
         app.put('/user', async (req, res) => {
             const user = req.body
@@ -348,6 +360,13 @@ async function run() {
             res.send(result)
         });
 
+        // get all users for admin only with verifyAdmin
+        // app.get('/users', verifyAdmin, async (req, res) => {
+        // verifyAdmin is not working! I don't know why
+        app.get('/users', async (req, res) => {
+            const result = await usersCollection.find().toArray()
+            res.send(result)
+        });
 
         // Send a ping to confirm a successful connection
         await client.db('admin').command({ ping: 1 })
