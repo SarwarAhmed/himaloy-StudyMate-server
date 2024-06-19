@@ -87,7 +87,7 @@ async function run() {
         })
 
 
-        // verify studen middelware !!! I don't know why it is not working 
+        // verify studen middelware !!! I don't know why it is not working
         const verifyStudent = async (req, res, next) => {
             const user = req.user
             const query = { email: user?.email }
@@ -310,6 +310,15 @@ async function run() {
             const email = req.params.email
             const query = { tutorEmail: email }
             const result = await studySessionsCollection.find(query).toArray()
+            res.send(result)
+        });
+
+        // delete session by tutor email and session id
+        app.delete('/session/:email/:id', async (req, res) => {
+            const email = req.params.email
+            const id = req.params.id
+            const query = { tutorEmail: email, _id: new ObjectId(id) }
+            const result = await studySessionsCollection.deleteOne(query)
             res.send(result)
         });
 
