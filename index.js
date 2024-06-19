@@ -313,12 +313,38 @@ async function run() {
             res.send(result)
         });
 
+        // view session by id created by tutor email
+        app.get('/session/:email/:id', async (req, res) => {
+            const email = req.params.email
+            const id = req.params.id
+            const query = { tutorEmail: email, _id: new ObjectId(id) }
+            const result = await studySessionsCollection.findOne(query)
+            res.send(result)
+        });
+
         // delete session by tutor email and session id
         app.delete('/session/:email/:id', async (req, res) => {
             const email = req.params.email
             const id = req.params.id
             const query = { tutorEmail: email, _id: new ObjectId(id) }
             const result = await studySessionsCollection.deleteOne(query)
+            res.send(result)
+        });
+
+        // update session by tutor email and session id
+        app.put('/session/:email/:id', async (req, res) => {
+            const email = req.params.email
+            const id = req.params.id
+            const session = req.body
+            const query = { tutorEmail: email, _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    ...session,
+                    timestamp: Date.now(),
+                },
+            }
+            const result = await studySessionsCollection.updateOne(query, updateDoc, options)
             res.send(result)
         });
 
