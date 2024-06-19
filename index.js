@@ -87,13 +87,26 @@ async function run() {
         })
 
 
-        // verify studen middelware
+        // verify studen middelware !!! I don't know why it is not working 
         const verifyStudent = async (req, res, next) => {
             const user = req.user
             const query = { email: user?.email }
             const result = await usersCollection.findOne(query)
 
             if (!result || result?.role !== 'student')
+                return res.status(401).send({ message: 'Unauthorized access' })
+
+            next()
+        }
+
+        // verify tutor tutor !!! I don't know why it is not working
+        const verifyTutor = async (req, res, next) => {
+            const user = req.user
+            const query = { email: user?.email }
+            console.log(query);
+            const result = await usersCollection.findOne(query)
+
+            if (!result || result?.role !== 'tutor')
                 return res.status(401).send({ message: 'Unauthorized access' })
 
             next()
@@ -292,6 +305,13 @@ async function run() {
             res.send(sessionResult)
         });
 
+        // View all study sessions route created by tutor email and role tutor
+        app.get('/view-sessions/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { tutorEmail: email }
+            const result = await studySessionsCollection.find(query).toArray()
+            res.send(result)
+        });
 
 
         // Send a ping to confirm a successful connection
